@@ -1,0 +1,11 @@
+# RoomSize by Refittr
+# https://roomsize.refittr.co.uk
+
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+Disallow: /admin
+
+# Sitemap
+Sitemap: https://roomsize.refittr.co.uk/sitemap.xml
