@@ -165,8 +165,8 @@ export default function PrivacyPage() {
           <section className="text-center text-[#64748B]">
             <p>
               Questions about this policy? Contact us at{' '}
-              <a href="mailto:hello@refittr.co.uk" className="text-[#10B981] hover:underline">
-                hello@refittr.co.uk
+              <a href="mailto:admin@refittr.co.uk" className="text-[#10B981] hover:underline">
+                admin@refittr.co.uk
               </a>
             </p>
           </section>
