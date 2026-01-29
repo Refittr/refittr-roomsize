@@ -130,8 +130,8 @@ export default function PrivacyPage() {
             </ul>
             <p className="text-[#64748B] mt-4">
               To exercise any of these rights, please contact us at{' '}
-              <a href="mailto:privacy@refittr.co.uk" className="text-[#10B981] hover:underline">
-                privacy@refittr.co.uk
+              <a href="mailto:admin@refittr.co.uk" className="text-[#10B981] hover:underline">
+                admin@refittr.co.uk
               </a>
             </p>
           </section>
