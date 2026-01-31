@@ -158,12 +158,20 @@ function RoomsContent() {
     } else {
       setExpandedRoom(room.id)
 
-      // Scroll the clicked room into view after expansion
+      // Scroll only if the expanded content would be below the viewport
       setTimeout(() => {
         const button = event.currentTarget
-        const roomElement = button.closest('[data-room-id]')
+        const roomElement = button.closest('[data-room-id]') as HTMLElement
         if (roomElement) {
-          roomElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          const rect = roomElement.getBoundingClientRect()
+          const viewportHeight = window.innerHeight
+          // Only scroll if the bottom of the expanded room would be below the viewport
+          // Expanded content is roughly 400px tall
+          if (rect.top + 450 > viewportHeight) {
+            // Scroll so the room header is near the top with some padding
+            const scrollY = window.scrollY + rect.top - 80
+            window.scrollTo({ top: scrollY, behavior: 'smooth' })
+          }
         }
       }, 50)
 
