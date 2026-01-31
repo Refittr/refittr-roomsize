@@ -151,12 +151,21 @@ function RoomsContent() {
     fetchSchema()
   }, [schemaId, router])
 
-  const handleRoomClick = (room: Room) => {
+  const handleRoomClick = (room: Room, event: React.MouseEvent<HTMLButtonElement>) => {
     // Toggle expansion
     if (expandedRoom === room.id) {
       setExpandedRoom(null)
     } else {
       setExpandedRoom(room.id)
+
+      // Scroll the clicked room into view after expansion
+      setTimeout(() => {
+        const button = event.currentTarget
+        const roomElement = button.closest('[data-room-id]')
+        if (roomElement) {
+          roomElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 50)
 
       // Log analytics
       fetch('/api/analytics', {
@@ -419,12 +428,13 @@ function RoomsContent() {
                             return (
                             <div
                               key={room.id}
+                              data-room-id={room.id}
                               className="bg-white rounded-lg border border-[#E2E8F0] border-l-4 overflow-hidden"
                               style={{ borderLeftColor: colors.border }}
                             >
                               {/* Room Header (clickable) */}
                               <button
-                                onClick={() => handleRoomClick(room)}
+                                onClick={(e) => handleRoomClick(room, e)}
                                 className="w-full px-3 py-2.5 flex items-center justify-between text-left hover:bg-[#F8FAFC] transition-colors"
                               >
                                 <div className="flex items-center gap-2">
