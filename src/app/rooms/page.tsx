@@ -51,19 +51,55 @@ const FLOOR_LABELS: Record<number, string> = {
   3: 'Third Floor',
 }
 
-const ROOM_TYPE_COLORS: Record<string, string> = {
-  kitchen: 'bg-orange-100 text-orange-700',
-  bedroom: 'bg-blue-100 text-blue-700',
-  bathroom: 'bg-cyan-100 text-cyan-700',
-  'en-suite': 'bg-cyan-100 text-cyan-700',
-  'living room': 'bg-green-100 text-green-700',
-  lounge: 'bg-green-100 text-green-700',
-  dining: 'bg-amber-100 text-amber-700',
-  hallway: 'bg-gray-100 text-gray-700',
-  utility: 'bg-purple-100 text-purple-700',
-  garage: 'bg-slate-100 text-slate-700',
-  study: 'bg-indigo-100 text-indigo-700',
-  office: 'bg-indigo-100 text-indigo-700',
+const ROOM_TYPE_COLORS: Record<string, { badgeBg: string; badgeText: string; border: string }> = {
+  // Kitchen - Orange
+  kitchen: { badgeBg: '#FFEDD5', badgeText: '#C2410C', border: '#FB923C' },
+  'kitchen/dining': { badgeBg: '#FFEDD5', badgeText: '#C2410C', border: '#FB923C' },
+  // Bedrooms - Blue
+  bedroom: { badgeBg: '#DBEAFE', badgeText: '#1D4ED8', border: '#60A5FA' },
+  'master bedroom': { badgeBg: '#DBEAFE', badgeText: '#1D4ED8', border: '#60A5FA' },
+  'bedroom 1': { badgeBg: '#DBEAFE', badgeText: '#1D4ED8', border: '#60A5FA' },
+  'bedroom 2': { badgeBg: '#DBEAFE', badgeText: '#1D4ED8', border: '#60A5FA' },
+  'bedroom 3': { badgeBg: '#DBEAFE', badgeText: '#1D4ED8', border: '#60A5FA' },
+  'bedroom 4': { badgeBg: '#DBEAFE', badgeText: '#1D4ED8', border: '#60A5FA' },
+  // Bathrooms - Cyan
+  bathroom: { badgeBg: '#CFFAFE', badgeText: '#0E7490', border: '#22D3EE' },
+  'en-suite': { badgeBg: '#CFFAFE', badgeText: '#0E7490', border: '#22D3EE' },
+  ensuite: { badgeBg: '#CFFAFE', badgeText: '#0E7490', border: '#22D3EE' },
+  'en suite': { badgeBg: '#CFFAFE', badgeText: '#0E7490', border: '#22D3EE' },
+  wc: { badgeBg: '#CFFAFE', badgeText: '#0E7490', border: '#22D3EE' },
+  toilet: { badgeBg: '#CFFAFE', badgeText: '#0E7490', border: '#22D3EE' },
+  cloakroom: { badgeBg: '#CFFAFE', badgeText: '#0E7490', border: '#22D3EE' },
+  'shower room': { badgeBg: '#CFFAFE', badgeText: '#0E7490', border: '#22D3EE' },
+  // Living areas - Green
+  'living room': { badgeBg: '#DCFCE7', badgeText: '#15803D', border: '#4ADE80' },
+  living: { badgeBg: '#DCFCE7', badgeText: '#15803D', border: '#4ADE80' },
+  lounge: { badgeBg: '#DCFCE7', badgeText: '#15803D', border: '#4ADE80' },
+  // Dining - Amber/Yellow
+  dining: { badgeBg: '#FEF3C7', badgeText: '#B45309', border: '#FBBF24' },
+  'dining room': { badgeBg: '#FEF3C7', badgeText: '#B45309', border: '#FBBF24' },
+  // Hallways - Teal
+  hallway: { badgeBg: '#CCFBF1', badgeText: '#0F766E', border: '#2DD4BF' },
+  hall: { badgeBg: '#CCFBF1', badgeText: '#0F766E', border: '#2DD4BF' },
+  landing: { badgeBg: '#CCFBF1', badgeText: '#0F766E', border: '#2DD4BF' },
+  entrance: { badgeBg: '#CCFBF1', badgeText: '#0F766E', border: '#2DD4BF' },
+  porch: { badgeBg: '#CCFBF1', badgeText: '#0F766E', border: '#2DD4BF' },
+  // Utility - Purple
+  utility: { badgeBg: '#F3E8FF', badgeText: '#7E22CE', border: '#A855F7' },
+  'utility room': { badgeBg: '#F3E8FF', badgeText: '#7E22CE', border: '#A855F7' },
+  laundry: { badgeBg: '#F3E8FF', badgeText: '#7E22CE', border: '#A855F7' },
+  // Garage - Rose/Pink
+  garage: { badgeBg: '#FFE4E6', badgeText: '#BE123C', border: '#FB7185' },
+  // Study/Office - Indigo
+  study: { badgeBg: '#E0E7FF', badgeText: '#4338CA', border: '#818CF8' },
+  office: { badgeBg: '#E0E7FF', badgeText: '#4338CA', border: '#818CF8' },
+  'home office': { badgeBg: '#E0E7FF', badgeText: '#4338CA', border: '#818CF8' },
+  // Storage - Violet
+  storage: { badgeBg: '#EDE9FE', badgeText: '#6D28D9', border: '#8B5CF6' },
+  cupboard: { badgeBg: '#EDE9FE', badgeText: '#6D28D9', border: '#8B5CF6' },
+  wardrobe: { badgeBg: '#EDE9FE', badgeText: '#6D28D9', border: '#8B5CF6' },
+  // Conservatory - Lime
+  conservatory: { badgeBg: '#ECFCCB', badgeText: '#4D7C0F', border: '#84CC16' },
 }
 
 function RoomsContent() {
@@ -105,11 +141,6 @@ function RoomsContent() {
 
         setSchema(data.schema)
         setRooms(data.rooms || [])
-
-        // Auto-expand first room
-        if (data.rooms && data.rooms.length > 0) {
-          setExpandedRoom(data.rooms[0].id)
-        }
       } catch {
         setError('Network error. Please try again.')
       } finally {
@@ -192,9 +223,9 @@ function RoomsContent() {
     return area.toFixed(2)
   }
 
-  const getRoomTypeColor = (roomType: string): string => {
+  const getRoomTypeColor = (roomType: string): { badgeBg: string; badgeText: string; border: string } => {
     const type = roomType.toLowerCase()
-    return ROOM_TYPE_COLORS[type] || 'bg-gray-100 text-gray-700'
+    return ROOM_TYPE_COLORS[type] || { badgeBg: '#F3F4F6', badgeText: '#374151', border: '#9CA3AF' }
   }
 
   const calculateWallArea = (wallLengthCm: number): number => {
@@ -269,70 +300,84 @@ function RoomsContent() {
           {!isLoading && !error && schema && (
             <>
               {/* Success Banner */}
-              <div className="bg-[#ECFDF5] border border-[#10B981]/20 rounded-xl p-4 mb-6 flex items-center gap-3">
-                <CheckCircle2 className="w-6 h-6 text-[#10B981] flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-[#059669]">We have your schema!</p>
-                  <p className="text-sm text-[#059669]/80">Room dimensions are ready to view below.</p>
+              <div className="bg-[#ECFDF5] border border-[#10B981]/20 rounded-xl p-4 mb-6 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-[#10B981] flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold text-[#059669]">We have your schema!</p>
+                    <p className="text-sm text-[#059669]/80">Room dimensions are ready to view below.</p>
+                  </div>
                 </div>
+                {schema.floor_plan_url && (
+                  <a
+                    href={schema.floor_plan_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 px-4 py-2 bg-[#10B981] hover:bg-[#059669] text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    View Floor Plan
+                  </a>
+                )}
               </div>
 
               {/* House Details */}
-              <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 mb-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 mb-6">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div>
-                    <p className="text-sm text-[#64748B] mb-1">{schema.builder_name}</p>
-                    <h1 className="text-2xl font-bold text-[#0F172A]">{schema.model_name}</h1>
-                    <p className="text-[#64748B] mt-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm text-[#64748B]">{schema.builder_name}</p>
+                      {schema.verified && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#10B981] text-white text-xs font-medium rounded-full">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Verified
+                        </span>
+                      )}
+                    </div>
+                    <h1 className="text-xl font-bold text-[#0F172A]">{schema.model_name}</h1>
+                    <p className="text-sm text-[#64748B] mt-1">
                       {schema.bedrooms} bed {schema.property_type}
                       {schema.year_from && (
-                        <span className="ml-2 text-sm">
-                          (Built {schema.year_from}{schema.year_to && schema.year_to !== schema.year_from ? `-${schema.year_to}` : '+' })
+                        <span className="ml-1 text-xs">
+                          (Built {schema.year_from}{schema.year_to && schema.year_to !== schema.year_from ? `-${schema.year_to}` : '+'})
                         </span>
                       )}
                     </p>
                   </div>
-                  {schema.verified && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#10B981] text-white text-sm font-medium rounded-full self-start">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Verified Schema
-                    </span>
-                  )}
-                </div>
 
-                {/* Optional Reason Question */}
-                <div className="mt-6 pt-6 border-t border-[#E2E8F0]">
-                  <label className="block text-sm font-medium text-[#0F172A] mb-2">
-                    Can you tell us why you need this? <span className="text-[#94A3B8]">(optional)</span>
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <select
-                      value={selectedReason}
-                      onChange={(e) => handleReasonChange(e.target.value)}
-                      disabled={reasonSubmitted}
-                      className="w-full sm:w-auto px-4 py-2 rounded-lg border border-[#E2E8F0] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent bg-white disabled:bg-gray-50 disabled:text-[#64748B]"
-                    >
-                      <option value="">Select a reason...</option>
-                      {REASONS.map((r) => (
-                        <option key={r.value} value={r.value}>
-                          {r.label}
-                        </option>
-                      ))}
-                    </select>
-                    {!reasonSubmitted ? (
-                      <button
-                        onClick={handleReasonSubmit}
-                        disabled={!selectedReason || isSubmittingReason}
-                        className="px-4 py-2 bg-[#10B981] hover:bg-[#059669] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  {/* Optional Reason Question - aligned right */}
+                  <div className="flex flex-col items-end gap-1">
+                    <label className="text-xs text-[#64748B]">
+                      Why do you need this? <span className="text-[#94A3B8]">(optional)</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedReason}
+                        onChange={(e) => handleReasonChange(e.target.value)}
+                        disabled={reasonSubmitted}
+                        className="px-2 py-1 text-xs rounded-lg border border-[#E2E8F0] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent bg-white disabled:bg-gray-50 disabled:text-[#64748B]"
                       >
-                        {isSubmittingReason ? 'Saving...' : 'Submit'}
-                      </button>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-4 py-2 text-[#059669] font-medium">
-                        <CheckCircle2 className="w-4 h-4" />
-                        Thanks for letting us know!
-                      </span>
-                    )}
+                        <option value="">Select...</option>
+                        {REASONS.map((r) => (
+                          <option key={r.value} value={r.value}>
+                            {r.label}
+                          </option>
+                        ))}
+                      </select>
+                      {!reasonSubmitted ? (
+                        <button
+                          onClick={handleReasonSubmit}
+                          disabled={!selectedReason || isSubmittingReason}
+                          className="px-2 py-1 text-xs bg-[#10B981] hover:bg-[#059669] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isSubmittingReason ? '...' : 'Submit'}
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[#059669] font-medium">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Thanks!
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -360,115 +405,101 @@ function RoomsContent() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {Object.entries(roomsByFloor)
                     .sort(([a], [b]) => Number(a) - Number(b))
                     .map(([floor, floorRooms]) => (
                       <div key={floor}>
-                        <h2 className="text-lg font-semibold text-[#0F172A] mb-3">
+                        <h2 className="text-sm font-semibold text-[#0F172A] mb-2">
                           {FLOOR_LABELS[Number(floor)] || `Floor ${floor}`}
                         </h2>
-                        <div className="space-y-3">
-                          {floorRooms.map((room) => (
+                        <div className="space-y-2">
+                          {floorRooms.map((room) => {
+                            const colors = getRoomTypeColor(room.room_type)
+                            return (
                             <div
                               key={room.id}
-                              className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden"
+                              className="bg-white rounded-lg border border-[#E2E8F0] border-l-4 overflow-hidden"
+                              style={{ borderLeftColor: colors.border }}
                             >
                               {/* Room Header (clickable) */}
                               <button
                                 onClick={() => handleRoomClick(room)}
-                                className="w-full p-4 flex items-center justify-between text-left hover:bg-[#F8FAFC] transition-colors"
+                                className="w-full px-3 py-2.5 flex items-center justify-between text-left hover:bg-[#F8FAFC] transition-colors"
                               >
-                                <div className="flex items-center gap-3">
-                                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getRoomTypeColor(room.room_type)}`}>
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className="px-2 py-0.5 text-xs font-medium rounded-full"
+                                    style={{ backgroundColor: colors.badgeBg, color: colors.badgeText }}
+                                  >
                                     {room.room_type}
                                   </span>
-                                  <span className="font-semibold text-[#0F172A]">{room.room_name}</span>
+                                  <span className="font-medium text-sm text-[#0F172A]">{room.room_name}</span>
                                   {room.dimensions_need_verification && (
-                                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                                    <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm text-[#64748B]">
+                                  <span className="text-xs text-[#64748B]">
                                     {calculateArea(room.length_cm, room.width_cm)} m²
                                   </span>
                                   {expandedRoom === room.id ? (
-                                    <ChevronUp className="w-5 h-5 text-[#64748B]" />
+                                    <ChevronUp className="w-4 h-4 text-[#64748B]" />
                                   ) : (
-                                    <ChevronDown className="w-5 h-5 text-[#64748B]" />
+                                    <ChevronDown className="w-4 h-4 text-[#64748B]" />
                                   )}
                                 </div>
                               </button>
 
                               {/* Expanded Dimensions */}
                               {expandedRoom === room.id && (
-                                <div className="px-4 pb-4 border-t border-[#E2E8F0]">
+                                <div className="px-3 pb-3 border-t border-[#E2E8F0]">
                                   {/* Floor Dimensions Header */}
-                                  <div className="text-center pt-4 pb-2">
-                                    <h3 className="text-sm font-semibold text-[#0F172A] uppercase tracking-wide">
+                                  <div className="text-center pt-3 pb-1">
+                                    <h3 className="text-xs font-semibold text-[#0F172A] uppercase tracking-wide">
                                       Floor Dimensions
                                     </h3>
-                                    <p className="text-xs text-[#64748B] mt-1">
-                                      For flooring, carpet & underlay calculations
-                                    </p>
                                   </div>
 
-                                  {/* Large Dimensions Display */}
-                                  <div className="grid grid-cols-3 gap-4 py-4">
+                                  {/* Dimensions Display */}
+                                  <div className="grid grid-cols-3 gap-2 py-2">
                                     <div className="text-center">
-                                      <p className="text-sm text-[#64748B] mb-1">Width</p>
-                                      <p className="text-3xl md:text-4xl font-bold text-[#0F172A]">
+                                      <p className="text-xs text-[#64748B]">Width</p>
+                                      <p className="text-xl font-bold text-[#0F172A]">
                                         {formatDimension(room.width_cm)}
-                                        <span className="text-lg font-normal text-[#64748B] ml-1">m</span>
+                                        <span className="text-sm font-normal text-[#64748B] ml-0.5">m</span>
                                       </p>
                                     </div>
                                     <div className="text-center">
-                                      <p className="text-sm text-[#64748B] mb-1">Length</p>
-                                      <p className="text-3xl md:text-4xl font-bold text-[#0F172A]">
+                                      <p className="text-xs text-[#64748B]">Length</p>
+                                      <p className="text-xl font-bold text-[#0F172A]">
                                         {formatDimension(room.length_cm)}
-                                        <span className="text-lg font-normal text-[#64748B] ml-1">m</span>
+                                        <span className="text-sm font-normal text-[#64748B] ml-0.5">m</span>
                                       </p>
                                     </div>
                                     <div className="text-center">
-                                      <p className="text-sm text-[#64748B] mb-1">Floor Area</p>
-                                      <p className="text-3xl md:text-4xl font-bold text-[#10B981]">
+                                      <p className="text-xs text-[#64748B]">Area</p>
+                                      <p className="text-xl font-bold text-[#10B981]">
                                         {calculateArea(room.length_cm, room.width_cm)}
-                                        <span className="text-lg font-normal text-[#64748B] ml-1">m²</span>
+                                        <span className="text-sm font-normal text-[#64748B] ml-0.5">m²</span>
                                       </p>
                                     </div>
                                   </div>
 
                                   {/* Wall Dimensions Section */}
-                                  <div className="mt-6 pt-6 border-t border-[#E2E8F0]">
+                                  <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
                                     <div className="text-center pb-2">
-                                      <h3 className="text-sm font-semibold text-[#0F172A] uppercase tracking-wide">
+                                      <h3 className="text-xs font-semibold text-[#0F172A] uppercase tracking-wide">
                                         Wall Dimensions
                                       </h3>
-                                      <p className="text-xs text-[#64748B] mt-1">
-                                        For paint, wallpaper & tile calculations
-                                      </p>
                                     </div>
 
-                                    {/* Ceiling Height Input */}
-                                    <div className="flex items-center justify-center gap-3 py-3">
-                                      <label className="text-sm text-[#64748B]">Ceiling height:</label>
-                                      <input
-                                        type="number"
-                                        value={ceilingHeight}
-                                        onChange={(e) => setCeilingHeight(parseFloat(e.target.value) || 2.4)}
-                                        step="0.1"
-                                        min="1.5"
-                                        max="5"
-                                        className="w-20 px-3 py-1.5 text-center border border-[#E2E8F0] rounded-lg text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
-                                      />
-                                      <span className="text-sm text-[#64748B]">m</span>
-                                    </div>
-
-                                    {/* Room Diagram */}
-                                    <div className="flex justify-center py-4">
+                                    {/* Walls diagram centered with ceiling height on right */}
+                                    <div className="flex items-center justify-center gap-6">
+                                      {/* Room Diagram - Centered */}
                                       <svg
                                         viewBox="0 0 200 150"
-                                        className="w-full max-w-xs"
+                                        className="w-40 h-32"
                                       >
                                         {/* Room rectangle */}
                                         <rect
@@ -487,8 +518,8 @@ function RoomsContent() {
                                           y1="20"
                                           x2="170"
                                           y2="20"
-                                          stroke={hoveredWall === 0 ? '#10B981' : '#94A3B8'}
-                                          strokeWidth={hoveredWall === 0 ? 12 : 8}
+                                          stroke={hoveredWall === 0 ? '#10B981' : '#64748B'}
+                                          strokeWidth={hoveredWall === 0 ? 16 : 12}
                                           strokeLinecap="round"
                                           className="cursor-pointer transition-all"
                                           onMouseEnter={() => setHoveredWall(0)}
@@ -501,8 +532,8 @@ function RoomsContent() {
                                           y1="20"
                                           x2="170"
                                           y2="120"
-                                          stroke={hoveredWall === 1 ? '#10B981' : '#94A3B8'}
-                                          strokeWidth={hoveredWall === 1 ? 12 : 8}
+                                          stroke={hoveredWall === 1 ? '#10B981' : '#64748B'}
+                                          strokeWidth={hoveredWall === 1 ? 16 : 12}
                                           strokeLinecap="round"
                                           className="cursor-pointer transition-all"
                                           onMouseEnter={() => setHoveredWall(1)}
@@ -515,8 +546,8 @@ function RoomsContent() {
                                           y1="120"
                                           x2="30"
                                           y2="120"
-                                          stroke={hoveredWall === 2 ? '#10B981' : '#94A3B8'}
-                                          strokeWidth={hoveredWall === 2 ? 12 : 8}
+                                          stroke={hoveredWall === 2 ? '#10B981' : '#64748B'}
+                                          strokeWidth={hoveredWall === 2 ? 16 : 12}
                                           strokeLinecap="round"
                                           className="cursor-pointer transition-all"
                                           onMouseEnter={() => setHoveredWall(2)}
@@ -529,8 +560,8 @@ function RoomsContent() {
                                           y1="120"
                                           x2="30"
                                           y2="20"
-                                          stroke={hoveredWall === 3 ? '#10B981' : '#94A3B8'}
-                                          strokeWidth={hoveredWall === 3 ? 12 : 8}
+                                          stroke={hoveredWall === 3 ? '#10B981' : '#64748B'}
+                                          strokeWidth={hoveredWall === 3 ? 16 : 12}
                                           strokeLinecap="round"
                                           className="cursor-pointer transition-all"
                                           onMouseEnter={() => setHoveredWall(3)}
@@ -538,40 +569,52 @@ function RoomsContent() {
                                         />
 
                                         {/* Dimension labels */}
-                                        <text x="100" y="12" textAnchor="middle" className="text-xs fill-[#64748B]">
+                                        <text x="100" y="10" textAnchor="middle" className="text-xs fill-[#64748B]">
                                           {formatDimension(room.length_cm)}m
                                         </text>
-                                        <text x="185" y="75" textAnchor="middle" className="text-xs fill-[#64748B]" transform="rotate(90 185 75)">
+                                        <text x="188" y="75" textAnchor="middle" className="text-xs fill-[#64748B]" transform="rotate(90 188 75)">
                                           {formatDimension(room.width_cm)}m
                                         </text>
                                       </svg>
+
+                                      {/* Ceiling Height Input - Right of walls */}
+                                      <div className="flex flex-col items-center gap-1 bg-[#F8FAFC] rounded-lg p-2">
+                                        <label className="text-[10px] text-[#64748B] uppercase">Ceiling</label>
+                                        <div className="flex items-center gap-1">
+                                          <input
+                                            type="number"
+                                            value={ceilingHeight}
+                                            onChange={(e) => setCeilingHeight(parseFloat(e.target.value) || 2.4)}
+                                            step="0.1"
+                                            min="1.5"
+                                            max="5"
+                                            className="w-14 px-1 py-1 text-sm text-center border border-[#E2E8F0] rounded-lg text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
+                                          />
+                                          <span className="text-xs text-[#64748B]">m</span>
+                                        </div>
+                                      </div>
                                     </div>
 
-                                    {/* Hovered Wall Info - Fixed height to prevent layout shift */}
-                                    <div className="text-center py-2 bg-[#F8FAFC] rounded-lg mb-3 min-h-[52px] flex flex-col justify-center">
+                                    {/* Hovered Wall Info */}
+                                    <div className="text-center py-1 bg-[#F8FAFC] rounded-lg mb-2 min-h-[36px] flex flex-col justify-center">
                                       {hoveredWall !== null ? (
-                                        <>
-                                          <p className="text-sm font-medium text-[#0F172A]">
-                                            {getWallDimensions(room).walls[hoveredWall].name}
-                                          </p>
-                                          <p className="text-xs text-[#64748B]">
-                                            {getWallDimensions(room).walls[hoveredWall].length.toFixed(2)}m × {ceilingHeight}m = {' '}
-                                            <span className="font-semibold text-[#10B981]">
-                                              {getWallDimensions(room).walls[hoveredWall].area.toFixed(2)} m²
-                                            </span>
-                                          </p>
-                                        </>
+                                        <p className="text-xs text-[#64748B]">
+                                          {getWallDimensions(room).walls[hoveredWall].name}: {getWallDimensions(room).walls[hoveredWall].length.toFixed(2)}m × {ceilingHeight}m = {' '}
+                                          <span className="font-semibold text-[#10B981]">
+                                            {getWallDimensions(room).walls[hoveredWall].area.toFixed(2)} m²
+                                          </span>
+                                        </p>
                                       ) : (
-                                        <p className="text-sm text-[#94A3B8]">Select a wall above to see details</p>
+                                        <p className="text-xs text-[#94A3B8]">Hover a wall to see details</p>
                                       )}
                                     </div>
 
                                     {/* Wall Areas Grid */}
-                                    <div className="grid grid-cols-2 gap-3 py-2">
+                                    <div className="grid grid-cols-4 gap-2 py-1">
                                       {getWallDimensions(room).walls.map((wall, index) => (
                                         <div
                                           key={index}
-                                          className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+                                          className={`p-2 rounded-lg border transition-colors cursor-pointer text-center ${
                                             hoveredWall === index
                                               ? 'bg-[#ECFDF5] border-[#10B981]'
                                               : 'bg-[#F8FAFC] border-[#E2E8F0]'
@@ -579,67 +622,61 @@ function RoomsContent() {
                                           onMouseEnter={() => setHoveredWall(index)}
                                           onMouseLeave={() => setHoveredWall(null)}
                                         >
-                                          <p className="text-xs text-[#64748B]">{wall.name}</p>
-                                          <p className="text-lg font-bold text-[#0F172A]">
-                                            {wall.area.toFixed(2)} <span className="text-sm font-normal">m²</span>
+                                          <p className="text-[10px] text-[#64748B]">Wall {index + 1}</p>
+                                          <p className="text-sm font-bold text-[#0F172A]">
+                                            {wall.area.toFixed(1)}m²
                                           </p>
                                         </div>
                                       ))}
                                     </div>
 
                                     {/* Total Wall Area */}
-                                    <div className="mt-3 p-4 bg-[#0F172A] rounded-lg text-center">
-                                      <p className="text-sm text-gray-400">Total Wall Area</p>
-                                      <p className="text-3xl font-bold text-[#10B981]">
+                                    <div className="mt-2 p-2 bg-[#0F172A] rounded-lg text-center">
+                                      <p className="text-xs text-gray-400">Total Wall Area</p>
+                                      <p className="text-xl font-bold text-[#10B981]">
                                         {getWallDimensions(room).totalArea.toFixed(2)}
-                                        <span className="text-lg font-normal text-gray-400 ml-1">m²</span>
+                                        <span className="text-sm font-normal text-gray-400 ml-0.5">m²</span>
                                       </p>
                                     </div>
 
                                     {/* Wall Disclaimer */}
-                                    <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                      <p className="text-sm text-amber-700 text-center font-medium">
-                                        ⚠️ These wall measurements are approximate
-                                      </p>
-                                      <p className="text-xs text-amber-600 text-center mt-1">
-                                        Remember to account for skirting boards, coving, doorways, windows, and any irregular walls or ceiling heights.
-                                      </p>
-                                    </div>
+                                    <p className="mt-2 text-[10px] text-amber-600 text-center">
+                                      ⚠️ Wall measurements are approximate. Account for doors, windows, skirting etc.
+                                    </p>
                                   </div>
 
                                   {/* Verification Warning */}
                                   {room.dimensions_need_verification && (
-                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
-                                      <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                                      <div>
-                                        <p className="text-sm font-medium text-red-700">Verification Required</p>
-                                        {room.verification_reason && (
-                                          <p className="text-sm text-red-600 mt-1">{room.verification_reason}</p>
-                                        )}
-                                      </div>
+                                    <div className="bg-red-50 border border-red-200 rounded p-2 mt-2 flex items-start gap-2">
+                                      <AlertTriangle className="w-3.5 h-3.5 text-red-600 flex-shrink-0 mt-0.5" />
+                                      <p className="text-xs text-red-700">
+                                        <span className="font-medium">Needs verification</span>
+                                        {room.verification_reason && `: ${room.verification_reason}`}
+                                      </p>
                                     </div>
                                   )}
 
                                   {/* Room-specific notes */}
                                   {room.notes && (
-                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 flex items-start gap-2">
-                                      <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                                      <p className="text-sm text-amber-700">{room.notes}</p>
+                                    <div className="bg-amber-50 border border-amber-200 rounded p-2 mt-2 flex items-start gap-2">
+                                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                      <p className="text-xs text-amber-700">{room.notes}</p>
                                     </div>
                                   )}
 
                                   {/* Report problem link */}
                                   <button
                                     onClick={() => handleReportProblem(room.room_name)}
-                                    className="flex items-center gap-1 text-sm text-[#64748B] hover:text-[#10B981] transition-colors"
+                                    className="flex items-center gap-1 text-xs text-[#64748B] hover:text-[#10B981] transition-colors mt-2"
                                   >
-                                    <Flag className="w-4 h-4" />
-                                    Report a problem with these dimensions
+                                    <Flag className="w-3 h-3" />
+                                    Report a problem
                                   </button>
                                 </div>
                               )}
                             </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     ))}
@@ -647,19 +684,17 @@ function RoomsContent() {
               )}
 
               {/* Disclaimer */}
-              <div className="mt-8 p-4 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
-                <p className="text-sm text-[#64748B]">
-                  <strong className="text-[#0F172A]">Important:</strong> This is the standard schema for the {schema.builder_name} {schema.model_name}.
-                  Dimensions are based on builder specifications. Individual properties may vary due to modifications or building variations.
-                  <strong> Always measure before ordering materials.</strong>
+              <div className="mt-6 p-3 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
+                <p className="text-xs text-[#64748B]">
+                  <strong className="text-[#0F172A]">Important:</strong> Standard schema for {schema.builder_name} {schema.model_name}. Properties may vary. Always measure before ordering.
                 </p>
               </div>
 
               {/* Report Problem Button */}
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center">
                 <button
                   onClick={() => handleReportProblem()}
-                  className="text-[#64748B] hover:text-[#10B981] text-sm font-medium transition-colors"
+                  className="text-[#64748B] hover:text-[#10B981] text-xs font-medium transition-colors"
                 >
                   Something wrong? Report a problem →
                 </button>
