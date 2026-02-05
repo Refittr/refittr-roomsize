@@ -112,6 +112,99 @@ export async function GET(request: NextRequest) {
 
     const results = Array.from(resultsMap.values())
 
+    // Search house schemas by model name or builder name
+    const { data: schemaResults, error: schemaError } = await supabase
+      .from('house_schemas')
+      .select(`
+        id,
+        model_name,
+        bedrooms,
+        property_type,
+        exterior_photo_url,
+        verified,
+        builders (
+          id,
+          name
+        )
+      `)
+      .ilike('model_name', `%${query.trim()}%`)
+      .limit(20)
+
+    if (schemaError) {
+      console.error('Schema search error:', schemaError)
+    }
+
+    // Also search by builder name
+    const { data: builderSchemaResults, error: builderError } = await supabase
+      .from('builders')
+      .select(`
+        id,
+        name,
+        house_schemas (
+          id,
+          model_name,
+          bedrooms,
+          property_type,
+          exterior_photo_url,
+          verified
+        )
+      `)
+      .ilike('name', `%${query.trim()}%`)
+      .limit(10)
+
+    if (builderError) {
+      console.error('Builder search error:', builderError)
+    }
+
+    // Combine and deduplicate house results
+    const houseMap = new Map()
+
+    if (schemaResults) {
+      for (const schema of schemaResults) {
+        const builder = schema.builders as unknown as { id: string; name: string } | null
+        houseMap.set(schema.id, {
+          schema_id: schema.id,
+          model_name: schema.model_name,
+          builder_name: builder?.name || 'Unknown',
+          bedrooms: schema.bedrooms,
+          property_type: schema.property_type,
+          exterior_photo_url: schema.exterior_photo_url,
+          verified: schema.verified,
+        })
+      }
+    }
+
+    if (builderSchemaResults) {
+      for (const builder of builderSchemaResults) {
+        const schemas = builder.house_schemas as Array<{
+          id: string
+          model_name: string
+          bedrooms: number
+          property_type: string
+          exterior_photo_url: string | null
+          verified: boolean
+        }> | null
+
+        if (schemas) {
+          for (const schema of schemas) {
+            if (!houseMap.has(schema.id)) {
+              houseMap.set(schema.id, {
+                schema_id: schema.id,
+                model_name: schema.model_name,
+                builder_name: builder.name,
+                bedrooms: schema.bedrooms,
+                property_type: schema.property_type,
+                exterior_photo_url: schema.exterior_photo_url,
+                verified: schema.verified,
+              })
+            }
+          }
+        }
+      }
+    }
+
+    const houseResults = Array.from(houseMap.values())
+
     // Group by postcode_area for clean display
     const grouped = results.reduce((acc, item) => {
       const area = item.postcode_area || 'Other'
@@ -130,6 +223,7 @@ export async function GET(request: NextRequest) {
         event_data: {
           query: searchTerm,
           results_count: results.length,
+          house_results_count: houseResults.length,
         },
       })
 
@@ -137,6 +231,7 @@ export async function GET(request: NextRequest) {
       results,
       grouped,
       total: results.length,
+      houses: houseResults,
     })
   } catch (error) {
     console.error('Search location error:', error)

@@ -221,12 +221,13 @@ function HousesContent() {
               </div>
 
               {/* Can't find house */}
-              <div className="mt-8 text-center">
+              <div className="mt-8">
                 <button
                   onClick={() => setShowModal(true)}
-                  className="text-[#64748B] hover:text-[#10B981] text-sm font-medium transition-colors"
+                  className="w-full px-6 py-4 bg-white border-2 border-dashed border-[#10B981] rounded-xl text-[#0F172A] font-semibold hover:bg-[#ECFDF5] hover:border-solid transition-all"
                 >
-                  Can't find your house type? Request a schema →
+                  <span className="text-[#10B981] mr-2 text-lg">+</span>
+                  Can't find your house type? Request your schema
                 </button>
               </div>
             </>
