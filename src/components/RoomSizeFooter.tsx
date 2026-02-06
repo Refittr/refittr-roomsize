@@ -46,6 +46,9 @@ export default function RoomSizeFooter() {
   return (
     <footer className="bg-white border-t border-[#E2E8F0] py-6 px-4">
       <div className="max-w-4xl mx-auto">
+        <p className="text-xs text-[#94A3B8] text-center mb-4 pb-4 border-b border-[#E2E8F0]">
+          We know your room sizes. Imagine if we could match you with fixtures that fit perfectly too.
+        </p>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* Branding text */}
           <div className="text-center md:text-left">
