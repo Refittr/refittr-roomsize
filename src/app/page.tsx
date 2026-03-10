@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Home, BadgeCheck } from 'lucide-react'
 import SchemaRequestModal from '@/components/SchemaRequestModal'
-import PostcodePromptModal from '@/components/PostcodePromptModal'
 
 interface HouseResult {
   schema_id: string
@@ -23,8 +22,6 @@ export default function HomePage() {
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [houseResults, setHouseResults] = useState<HouseResult[]>([])
-  const [showPostcodePrompt, setShowPostcodePrompt] = useState(false)
-  const [selectedHouse, setSelectedHouse] = useState<HouseResult | null>(null)
 
   // Log page view on mount
   useEffect(() => {
@@ -77,10 +74,7 @@ export default function HomePage() {
   }
 
   const handleHouseClick = (house: HouseResult) => {
-    setSelectedHouse(house)
-    setShowPostcodePrompt(true)
-
-    // Log analytics
+    // Log analytics (postcode captured silently from the search query)
     fetch('/api/analytics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -90,15 +84,13 @@ export default function HomePage() {
           schema_id: house.schema_id,
           model_name: house.model_name,
           builder_name: house.builder_name,
+          search_query: query,
         },
         page_url: '/',
       }),
     }).catch(() => {})
-  }
 
-  const handlePostcodeSubmit = (schemaId: string) => {
-    setShowPostcodePrompt(false)
-    router.push(`/rooms?schema_id=${schemaId}`)
+    router.push(`/rooms?schema_id=${house.schema_id}`)
   }
 
   return (
@@ -248,13 +240,6 @@ export default function HomePage() {
         onClose={() => setShowModal(false)}
       />
 
-      {/* Postcode Prompt Modal */}
-      <PostcodePromptModal
-        isOpen={showPostcodePrompt}
-        onClose={() => setShowPostcodePrompt(false)}
-        house={selectedHouse}
-        onSubmit={handlePostcodeSubmit}
-      />
     </>
   )
 }
