@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       .select(`
         id,
         name,
-        postcode_prefix,
+        postcode_area,
         streets (
           id,
           street_name,
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
           postcode_area
         )
       `)
-      .or(`name.ilike.%${query.trim()}%,postcode_prefix.ilike.%${searchTerm}%`)
+      .or(`name.ilike.%${query.trim()}%,postcode_area.ilike.%${searchTerm}%`)
       .limit(20)
 
     if (devError) {
