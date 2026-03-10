@@ -257,7 +257,138 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const houseResults = Array.from(houseMap.values())
+    let houseResults = Array.from(houseMap.values())
+
+    // ── Prefix fallback ──
+    // If no street results and no house results, and the query looks like a full
+    // postcode (contains a space, e.g. "L33 1RL"), extract the outward code ("L33")
+    // and search for all schemas linked to streets/developments in that area.
+    let prefixArea: string | null = null
+
+    const spaceIdx = searchTerm.indexOf(' ')
+    const isFullPostcode = spaceIdx > 0
+
+    if (results.length === 0 && houseResults.length === 0 && isFullPostcode) {
+      const prefix = searchTerm.substring(0, spaceIdx)
+      prefixArea = prefix
+
+      // Find streets in this postcode area
+      const { data: areaStreets } = await supabase
+        .from('streets')
+        .select('id')
+        .ilike('postcode_area', `${prefix}%`)
+        .limit(200)
+
+      if (areaStreets && areaStreets.length > 0) {
+        const streetIds = areaStreets.map((s: { id: string }) => s.id)
+
+        const { data: schemaLinks } = await supabase
+          .from('house_schema_streets')
+          .select(`
+            house_schema_id,
+            house_schemas (
+              id,
+              model_name,
+              bedrooms,
+              property_type,
+              exterior_photo_url,
+              verified,
+              builders (
+                id,
+                name
+              )
+            )
+          `)
+          .in('street_id', streetIds)
+
+        if (schemaLinks) {
+          for (const link of schemaLinks) {
+            const schema = link.house_schemas as unknown as {
+              id: string
+              model_name: string
+              bedrooms: number
+              property_type: string
+              exterior_photo_url: string | null
+              verified: boolean
+              builders: { id: string; name: string } | null
+            } | null
+            if (schema && !houseMap.has(schema.id)) {
+              houseMap.set(schema.id, {
+                schema_id: schema.id,
+                model_name: schema.model_name,
+                builder_name: schema.builders?.name || 'Unknown',
+                bedrooms: schema.bedrooms,
+                property_type: schema.property_type,
+                exterior_photo_url: schema.exterior_photo_url,
+                verified: schema.verified,
+              })
+            }
+          }
+        }
+      }
+
+      // Also find developments in this postcode area → schemas via junction
+      const { data: areaDevs } = await supabase
+        .from('developments')
+        .select('id')
+        .ilike('postcode_area', `${prefix}%`)
+        .limit(50)
+
+      if (areaDevs && areaDevs.length > 0) {
+        const areaDevIds = areaDevs.map((d: { id: string }) => d.id)
+
+        const { data: devSchemaLinks } = await supabase
+          .from('house_schema_developments')
+          .select(`
+            development_id,
+            house_schemas (
+              id,
+              model_name,
+              bedrooms,
+              property_type,
+              exterior_photo_url,
+              verified,
+              builders (
+                id,
+                name
+              )
+            )
+          `)
+          .in('development_id', areaDevIds)
+
+        if (devSchemaLinks) {
+          for (const link of devSchemaLinks) {
+            const schema = link.house_schemas as unknown as {
+              id: string
+              model_name: string
+              bedrooms: number
+              property_type: string
+              exterior_photo_url: string | null
+              verified: boolean
+              builders: { id: string; name: string } | null
+            } | null
+            if (schema && !houseMap.has(schema.id)) {
+              houseMap.set(schema.id, {
+                schema_id: schema.id,
+                model_name: schema.model_name,
+                builder_name: schema.builders?.name || 'Unknown',
+                bedrooms: schema.bedrooms,
+                property_type: schema.property_type,
+                exterior_photo_url: schema.exterior_photo_url,
+                verified: schema.verified,
+              })
+            }
+          }
+        }
+      }
+
+      houseResults = Array.from(houseMap.values())
+
+      // If prefix search also found nothing, clear the prefix label
+      if (houseResults.length === 0) {
+        prefixArea = null
+      }
+    }
 
     // Group by postcode_area for clean display
     const grouped = results.reduce((acc, item) => {
@@ -278,6 +409,7 @@ export async function GET(request: NextRequest) {
           query: searchTerm,
           results_count: results.length,
           house_results_count: houseResults.length,
+          prefix_fallback: prefixArea !== null,
         },
       })
 
@@ -286,6 +418,7 @@ export async function GET(request: NextRequest) {
       grouped,
       total: results.length,
       houses: houseResults,
+      prefix_area: prefixArea,
     })
   } catch (error) {
     console.error('Search location error:', error)

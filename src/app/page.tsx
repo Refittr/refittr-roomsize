@@ -22,6 +22,7 @@ export default function HomePage() {
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [houseResults, setHouseResults] = useState<HouseResult[]>([])
+  const [prefixArea, setPrefixArea] = useState<string | null>(null)
 
   // Log page view on mount
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function HomePage() {
     setIsSearching(true)
     setError(null)
     setHouseResults([])
+    setPrefixArea(null)
 
     try {
       const response = await fetch(`/api/search-location?query=${encodeURIComponent(query.trim())}`)
@@ -61,6 +63,7 @@ export default function HomePage() {
       // If no street results but we have house results, show them here
       if (data.houses && data.houses.length > 0) {
         setHouseResults(data.houses)
+        setPrefixArea(data.prefix_area || null)
         return
       }
 
@@ -145,7 +148,10 @@ export default function HomePage() {
             <div className="w-full max-w-xl mx-auto mt-6 mb-6">
               <div className="bg-[#ECFDF5] border border-[#10B981]/20 rounded-xl p-4 mb-4">
                 <p className="text-[#059669] font-medium text-sm">
-                  We found {houseResults.length} matching house type{houseResults.length !== 1 ? 's' : ''}! Select yours to see room dimensions.
+                  {prefixArea
+                    ? `Houses in the ${prefixArea} area — your exact street wasn't found but these house types are linked to this postcode area. Select yours to see room dimensions.`
+                    : `We found ${houseResults.length} matching house type${houseResults.length !== 1 ? 's' : ''}! Select yours to see room dimensions.`
+                  }
                 </p>
               </div>
 
