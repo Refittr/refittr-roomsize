@@ -45,12 +45,13 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Search developments by name
+    // Search developments by name or postcode_prefix
     const { data: devResults, error: devError } = await supabase
       .from('developments')
       .select(`
         id,
         name,
+        postcode_prefix,
         streets (
           id,
           street_name,
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
           postcode_area
         )
       `)
-      .ilike('name', `%${query.trim()}%`)
+      .or(`name.ilike.%${query.trim()}%,postcode_prefix.ilike.%${searchTerm}%`)
       .limit(20)
 
     if (devError) {
@@ -84,6 +85,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Add development results (streets within matching developments)
+    // For devs with no streets, collect their IDs to look up directly-linked schemas
+    const devsWithNoStreets: Array<{ id: string; name: string }> = []
+
     if (devResults) {
       for (const dev of devResults) {
         const streets = dev.streets as Array<{
@@ -93,7 +97,7 @@ export async function GET(request: NextRequest) {
           postcode_area: string
         }> | null
 
-        if (streets) {
+        if (streets && streets.length > 0) {
           for (const street of streets) {
             if (!resultsMap.has(street.id)) {
               resultsMap.set(street.id, {
@@ -106,6 +110,8 @@ export async function GET(request: NextRequest) {
               })
             }
           }
+        } else {
+          devsWithNoStreets.push({ id: dev.id, name: dev.name })
         }
       }
     }
@@ -198,6 +204,54 @@ export async function GET(request: NextRequest) {
                 verified: schema.verified,
               })
             }
+          }
+        }
+      }
+    }
+
+    // For developments with no streets, look up schemas via house_schema_developments
+    if (devsWithNoStreets.length > 0) {
+      const devIds = devsWithNoStreets.map(d => d.id)
+      const { data: directDevSchemas } = await supabase
+        .from('house_schema_developments')
+        .select(`
+          development_id,
+          house_schemas (
+            id,
+            model_name,
+            bedrooms,
+            property_type,
+            exterior_photo_url,
+            verified,
+            builders (
+              id,
+              name
+            )
+          )
+        `)
+        .in('development_id', devIds)
+
+      if (directDevSchemas) {
+        for (const link of directDevSchemas) {
+          const schema = link.house_schemas as unknown as {
+            id: string
+            model_name: string
+            bedrooms: number
+            property_type: string
+            exterior_photo_url: string | null
+            verified: boolean
+            builders: { id: string; name: string } | null
+          } | null
+          if (schema && !houseMap.has(schema.id)) {
+            houseMap.set(schema.id, {
+              schema_id: schema.id,
+              model_name: schema.model_name,
+              builder_name: schema.builders?.name || 'Unknown',
+              bedrooms: schema.bedrooms,
+              property_type: schema.property_type,
+              exterior_photo_url: schema.exterior_photo_url,
+              verified: schema.verified,
+            })
           }
         }
       }
