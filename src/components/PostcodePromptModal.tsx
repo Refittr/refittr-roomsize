@@ -195,24 +195,29 @@ export default function PostcodePromptModal({ isOpen, onClose, house, onSubmit }
                         {devName}
                       </p>
                     )}
-                    {devStreets.map((street) => (
-                      <button
-                        key={street.street_id}
-                        onClick={() => handleStreetSelect(street)}
-                        className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#F8FAFC] transition-colors flex items-center gap-3 group"
-                      >
-                        <MapPin className="w-4 h-4 text-[#94A3B8] group-hover:text-[#10B981] flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-[#0F172A] group-hover:text-[#10B981] truncate">
-                            {street.street_name}
-                          </p>
-                          {street.postcode && (
-                            <p className="text-xs text-[#94A3B8]">{street.postcode}</p>
-                          )}
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#10B981] flex-shrink-0" />
-                      </button>
-                    ))}
+                    {devStreets.map((street) => {
+                      const streetPostcodes = street.postcode ? street.postcode.split(',').map(pc => pc.trim()).filter(Boolean) : []
+                      return (
+                        <button
+                          key={street.street_id}
+                          onClick={() => handleStreetSelect(street)}
+                          className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#F8FAFC] transition-colors flex items-center gap-3 group"
+                        >
+                          <MapPin className="w-4 h-4 text-[#94A3B8] group-hover:text-[#10B981] flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-[#0F172A] group-hover:text-[#10B981] truncate">
+                              {street.street_name}
+                            </p>
+                            {streetPostcodes.length > 0 && (
+                              <p className="text-xs text-[#94A3B8]">
+                                {streetPostcodes.join(' / ')}
+                              </p>
+                            )}
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#10B981] flex-shrink-0" />
+                        </button>
+                      )
+                    })}
                   </div>
                 ))}
               </div>
