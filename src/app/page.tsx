@@ -149,7 +149,7 @@ export default function HomePage() {
               <div className="bg-[#ECFDF5] border border-[#10B981]/20 rounded-xl p-4 mb-4">
                 <p className="text-[#059669] font-medium text-sm">
                   {prefixArea
-                    ? `Houses in the ${prefixArea} area — your exact street wasn't found but these house types are linked to this postcode area. Select yours to see room dimensions.`
+                    ? `Houses in the ${prefixArea} area - your exact street wasn't found but these house types are linked to this postcode area. Select yours to see room dimensions.`
                     : `We found ${houseResults.length} matching house type${houseResults.length !== 1 ? 's' : ''}! Select yours to see room dimensions.`
                   }
                 </p>

@@ -1,12 +1,21 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Sora, DM_Sans } from "next/font/google"
 import "./globals.css"
-import RoomSizeFooter from "@/components/RoomSizeFooter"
+import SiteNav from "@/components/SiteNav"
+import SiteFooter from "@/components/SiteFooter"
+import CrossLinkBanner from "@/components/CrossLinkBanner"
 import { Analytics } from "@vercel/analytics/next"
 
-const inter = Inter({
+const sora = Sora({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sora",
+  weight: ["400", "500", "600", "700"],
+})
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  weight: ["400", "500", "600"],
 })
 
 export const metadata: Metadata = {
@@ -64,11 +73,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased bg-[#F8FAFC] text-[#475569] min-h-screen flex flex-col`}>
+      <body className={`${sora.variable} ${dmSans.variable} font-sans antialiased bg-[#F8FAFC] text-[#475569] min-h-screen flex flex-col`}>
+        <SiteNav activeSite="roomsize" />
         <main className="flex-1">
           {children}
         </main>
-        <RoomSizeFooter />
+        <CrossLinkBanner site="roomsize" />
+        <SiteFooter />
         <Analytics />
       </body>
     </html>
